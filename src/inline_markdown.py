@@ -1,16 +1,15 @@
 import re
-from enum import Enum
 
 from textnode import TextType, TextNode
 
-class BlockType(Enum):
-    PARAGRAPH = "paragraph"
-    HEADING = "heading"
-    CODE = "code"
-    QUOTE = "quote"
-    UNORDERED_LIST = "unordered list"
-    ORDERED_LIST = "ordered list"
 
+def text_to_textnodes(text):
+    nodes_list = split_nodes_delimiter([TextNode(text, TextType.TEXT)], "**", TextType.BOLD)
+    nodes_list = split_nodes_delimiter(nodes_list, "_", TextType.ITALIC)
+    nodes_list = split_nodes_delimiter(nodes_list, "`", TextType.CODE)
+    nodes_list = split_nodes_image(nodes_list)
+    nodes_list = split_nodes_link(nodes_list)
+    return nodes_list
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
@@ -19,11 +18,13 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         # If the node isn't a TEXT type node
         if node.text_type != TextType.TEXT:
             new_nodes.append(node)
+            continue
         # If the delimiter doesn't appear in the node's text
-        elif not delimiter in node.text:
+        if not delimiter in node.text:
             new_nodes.append(node)
+            continue
         # Check for closing delimiters; delimiter count should be even
-        elif node.text.count(delimiter) % 2 != 0:
+        if node.text.count(delimiter) % 2 != 0:
             raise Exception("Invalid Markdown Syntax; missing delimiter")
         else:
             result = []
@@ -103,58 +104,6 @@ def split_nodes_link(old_nodes):
     return new_nodes
 
 
-def text_to_textnodes(text):
-    nodes_list = split_nodes_delimiter([TextNode(text, TextType.TEXT)], "**", TextType.BOLD)
-    nodes_list = split_nodes_delimiter(nodes_list, "_", TextType.ITALIC)
-    nodes_list = split_nodes_delimiter(nodes_list, "`", TextType.CODE)
-    nodes_list = split_nodes_image(nodes_list)
-    nodes_list = split_nodes_link(nodes_list)
-    return nodes_list
 
 
-def markdown_to_blocks(markdown):
-    blocks = markdown.split("\n\n")
-    delete_list = []
-    for i in range(0, len(blocks)):
-        if blocks[i] == "\n" or blocks[i] == "":
-            delete_list.append(i)
-        else:
-            blocks[i] = blocks[i].strip()
-    for i in delete_list:
-        del blocks[i]
-    return blocks
 
-
-def block_to_block_type(markdown):
-    if markdown.startswith("###### "):
-        return BlockType.HEADING
-    if markdown.startswith("##### "):
-        return BlockType.HEADING
-    if markdown.startswith("#### "):
-        return BlockType.HEADING
-    if markdown.startswith("### "):
-        return BlockType.HEADING
-    if markdown.startswith("## "):
-        return BlockType.HEADING
-    if markdown.startswith("# "):
-        return BlockType.HEADING
-    if markdown.startswith("```") and markdown.endswith("```"):
-        return BlockType.CODE
-    if markdown.startswith(">") and len(re.findall(r"(\n(?!>))", markdown)) == 0:
-        return BlockType.QUOTE
-    if markdown.startswith("- ") and len(re.findall(r"(\n(?!- ))", markdown)) == 0:
-        return BlockType.UNORDERED_LIST
-    # Test for ascending numbers in an ordered list
-    ol_test = re.findall(r"(\n\d\. )", markdown)
-    ol = True
-    if len(ol_test) > 0:
-        previous_num = 1
-        for match in ol_test:
-            if match != f"\n{previous_num + 1}. ":
-                ol = False
-            else:
-                previous_num += 1
-    if markdown.startswith("1. ") and ol:
-        return BlockType.ORDERED_LIST
-    return BlockType.PARAGRAPH
-    

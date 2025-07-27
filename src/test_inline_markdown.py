@@ -1,9 +1,15 @@
 import unittest
 
-from nodefunctions import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks, block_to_block_type, BlockType
+from inline_markdown import (
+    split_nodes_delimiter, extract_markdown_images, extract_markdown_links,
+    split_nodes_image, split_nodes_link, text_to_textnodes
+)
+from markdown_blocks import (
+    markdown_to_blocks, block_to_block_type, BlockType, markdown_to_html_node
+)
 from textnode import TextNode, TextType
 
-class TestNodeFunctions(unittest.TestCase):
+class TestInlineMarkdown(unittest.TestCase):
     def test_bold_at_start(self):
         node = TextNode("**Bold** at start.", TextType.TEXT)
         split_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
@@ -156,109 +162,7 @@ class TestNodeFunctions(unittest.TestCase):
         )
 
 
-    def test_markdown_to_blocks_1(self):
-        md = """
-This is **bolded** paragraph
 
-This is another paragraph with _italic_ text and `code` here
-This is the same paragraph on a new line
 
-- This is a list
-- with items
-"""
-        blocks = markdown_to_blocks(md)
-        self.assertEqual(
-            blocks,
-            [
-                "This is **bolded** paragraph",
-                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
-                "- This is a list\n- with items",
-            ],
-        )
     
-
-    def test_markdown_to_blocks_2(self):
-        md = """
-This is **bolded** paragraph
-
-
-This is another paragraph with _italic_ text and `code` here
-This is the same paragraph on a new line
-
-
-
-
-- This is a list
-- with items
-"""
-        blocks = markdown_to_blocks(md)
-        self.assertEqual(
-            blocks,
-            [
-                "This is **bolded** paragraph",
-                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
-                "- This is a list\n- with items",
-            ],
-        )
-
-
-    def test_block_to_block_type_1(self):
-        self.assertEqual(
-            block_to_block_type("This is just a paragraph."),
-            BlockType.PARAGRAPH,
-        )
-    
-
-    def test_block_to_block_type_2(self):
-        self.assertEqual(
-            block_to_block_type("# This is a heading."),
-            BlockType.HEADING,
-        )
-
-
-    def test_block_to_block_type_3(self):
-        self.assertEqual(
-            block_to_block_type(
-"""```
-This is a code block.
-```"""
-            ),
-            BlockType.CODE,
-        )
-    
-
-    def test_block_to_block_type_4(self):
-        self.assertEqual(
-            block_to_block_type(
-"""> This is a 
-> quote block.
-> It needs to be a bit long.
-> So sayeth the wise man."""),
-            BlockType.QUOTE,
-        )
-    
-
-    def test_block_to_block_type_5(self):
-        self.assertEqual(
-            block_to_block_type(
-"""- This
-- is
-- an
-- unordered
-- list"""
-                ),
-            BlockType.UNORDERED_LIST,
-        )
-    
-
-    def test_block_to_block_type_5(self):
-        self.assertEqual(
-            block_to_block_type(
-"""1. This
-2. is
-3. an
-4. ordered
-5. list"""
-                ),
-            BlockType.ORDERED_LIST,
-        )    
+ 
