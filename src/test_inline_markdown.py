@@ -2,10 +2,7 @@ import unittest
 
 from inline_markdown import (
     split_nodes_delimiter, extract_markdown_images, extract_markdown_links,
-    split_nodes_image, split_nodes_link, text_to_textnodes
-)
-from markdown_blocks import (
-    markdown_to_blocks, block_to_block_type, BlockType, markdown_to_html_node
+    split_nodes_image, split_nodes_link, text_to_textnodes, extract_title,
 )
 from textnode import TextNode, TextType
 
@@ -162,7 +159,10 @@ class TestInlineMarkdown(unittest.TestCase):
         )
 
 
-
+    def test_extract_title(self):
+        text = "# The Title\nThe title is at the start of this string."
+        title = extract_title(text)
+        self.assertEqual(title, "The Title")
 
     
  
